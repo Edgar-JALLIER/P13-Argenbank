@@ -1,0 +1,36 @@
+@import "./abstracts/variables";
+
+@import "./base/normalize";
+
+@import "./components/heroBanner";
+@import "./components/features";
+@import "./components/signIn";
+@import "./components/user";
+
+@import "./layout/header";
+@import "./layout/footer";
+
+// Global styles
+
+html {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
+#root {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+}
+
+.bg-dark {
+  background-color: #12002b;
+}
