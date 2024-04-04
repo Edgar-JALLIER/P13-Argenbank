@@ -5,6 +5,7 @@ const swaggerUi = require("swagger-ui-express");
 const yaml = require("yamljs");
 const swaggerDocs = yaml.load("./swagger.yaml");
 const dbConnection = require("./database/connection");
+const userModel = require("./database/models/userModel");
 
 dotEnv.config();
 
@@ -33,6 +34,17 @@ app.get("/", (req, res, next) => {
   res.send("Hello from my Express server v2!");
 });
 
+app.get("/api/users", async (req, res, next) => {
+  try {
+    const users = await userModel.find();
+    res.json(users);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des utilisateurs :", error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la récupération des utilisateurs" });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
