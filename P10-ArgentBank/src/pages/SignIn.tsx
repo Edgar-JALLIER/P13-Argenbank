@@ -5,55 +5,56 @@ import { faUserCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { loginUserSuccess, setLoading, setError } from "../redux/authSlice";
+import { RootState } from "../utiles/interfaces";
 
 const SignIn = () => {
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector(
+    (state) => (state as RootState).auth.isAuthenticated
+  );
+  const error = useSelector((state) => (state as RootState).auth.error);
+  const loading = useSelector((state) => (state as RootState).auth.loading);
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
-  // const testStore = useSelector((state) => state);
-  // console.log(testStore);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Email:", email);
+    dispatch(setLoading(true));
     try {
-      const response = await axios.post("http://localhost:3001/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:3001/api/v1/user/login",
+        {
+          email,
+          password,
+        }
+      );
+      const getUser = await axios.post(
+        "http://localhost:3001/api/v1/user/profile",
+        null, // corps de la requête vide car aucune donnée supplémentaire n'est nécessaire
+        {
+          headers: {
+            Authorization: `Bearer ${response.data.body.token}`,
+          },
+        }
+      );
       console.log("Authentification réussie:", response.data);
-      // Rediriger l'utilisateur vers une autre page ou mettre à jour l'état de l'sauthentification, etc.
+      console.log("Utilisateur connecté:", getUser);
+      localStorage.setItem("token", response.data.body.token);
+      dispatch(loginUserSuccess());
     } catch (error) {
       console.error("Erreur lors de l'authentification :", error);
-      setError("Email ou mot de passe incorrect");
+      dispatch(setError("Email ou mot de passe incorrect"));
     }
-
-    // Envoi des données au serveur pour authentification
-    // dispatch(loginUser({ email, password }));
-
-    // Réinitialiser les champs du formulaire après la soumission
-    setEmail("");
-    setPassword("");
   };
 
-  const [users, setUsers] = useState([]);
-
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/api/users");
-        setUsers(response.data);
-      } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des utilisateurs :",
-          error
-        );
-      }
-    };
-
-    fetchUsers();
-  }, []);
+    if (isAuthenticated) {
+      navigate("/user");
+    }
+  }, [isAuthenticated, navigate]);
   return (
     <>
       <Header />
@@ -93,6 +94,7 @@ const SignIn = () => {
             <button type="submit" className="sign-in-button">
               Sign In
             </button>
+            {loading && <p>Chargement ...</p>}
             {error && <p className="error-message">{error}</p>}
           </form>
         </section>

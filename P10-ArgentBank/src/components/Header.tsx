@@ -6,9 +6,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../redux/authSlice";
+import { RootState } from "../utiles/interfaces";
 
 const Header = () => {
-  const [userIsConnected, setUserIsConnected] = useState(false);
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector(
+    (state) => (state as RootState).auth.isAuthenticated
+  );
 
   return (
     <nav className="header-nav">
@@ -19,7 +25,7 @@ const Header = () => {
           alt="Argent Bank Logo"
         />
       </a>
-      {userIsConnected ? (
+      {isAuthenticated ? (
         <div>
           <Link className="header-nav-item" to={"#"}>
             <FontAwesomeIcon icon={faUserCircle} />
@@ -30,7 +36,10 @@ const Header = () => {
           <Link
             className="header-nav-item"
             to={"/"}
-            onClick={() => setUserIsConnected(false)}
+            onClick={() => {
+              dispatch(logoutUser());
+              localStorage.removeItem("token");
+            }}
           >
             <FontAwesomeIcon icon={faRightFromBracket} />
             <span>Sign Out</span>
