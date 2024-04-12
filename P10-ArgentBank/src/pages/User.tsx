@@ -3,7 +3,9 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { RootState } from "../utiles/interfaces";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { updateUser } from "../services/userServices";
+import userSlice from "../redux/userSlice";
 
 const User = () => {
   const dispatch = useDispatch();
@@ -12,10 +14,28 @@ const User = () => {
   const isAuthenticated = useSelector(
     (state) => (state as RootState).auth.isAuthenticated
   );
+  const token = useSelector((state) => (state as RootState).auth.token);
   const navigate = useNavigate();
+  const firstnameRef = useRef<HTMLInputElement>(null);
+  const lastnameRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const firstnameValue = firstnameRef.current!.value;
+    const lastnameValue = lastnameRef.current!.value;
+
+    try {
+      const user = await updateUser(token!, firstnameValue, lastnameValue);
+      dispatch(userSlice.actions.setUser(user));
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
+    }
   };
 
   useEffect(() => {
@@ -23,6 +43,7 @@ const User = () => {
       navigate("/signIn");
     }
   });
+
   return (
     <>
       {!isAuthenticated ? (
@@ -41,27 +62,34 @@ const User = () => {
                   {userInfo.firstName} {userInfo.lastName} !
                 </h1>
                 {isOpen ? (
-                  <form className="form" action="">
+                  <form className="form" onSubmit={handleSubmit}>
                     <div className="container-button">
                       <input
+                        required
                         className="form-input"
                         type="text"
                         id="firstName"
                         name="firstName"
+                        ref={firstnameRef}
                         placeholder={userInfo.firstName}
                       />
                       <input
+                        required
                         className="form-input"
                         type="text"
                         id="lastName"
                         name="lastName"
+                        ref={lastnameRef}
                         placeholder={userInfo.lastName}
                       />
                     </div>
                     <div className="container-button">
-                      <button className="form-button">Save</button>
+                      <button type="submit" className="form-button">
+                        Save
+                      </button>
                       <button
                         className="form-button"
+                        type="button"
                         onClick={() => handleClick()}
                       >
                         Cancel

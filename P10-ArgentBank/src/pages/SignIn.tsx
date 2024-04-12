@@ -37,8 +37,7 @@ const SignIn = () => {
 
       console.log("Authentification réussie:", authUser);
       console.log("Utilisateur connecté:", getUser);
-      localStorage.setItem("token", authUser.token);
-      dispatch(loginUserSuccess());
+      dispatch(loginUserSuccess(authUser.token));
       dispatch(setUser(getUser));
     } catch (error) {
       console.error("Erreur lors de l'authentification :", error);
