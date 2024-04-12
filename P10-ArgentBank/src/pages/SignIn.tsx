@@ -6,8 +6,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { loginUserSuccess, setLoading, setError } from "../redux/authSlice";
+import authSlice, {
+  loginUserSuccess,
+  setLoading,
+  setError,
+} from "../redux/authSlice";
 import { RootState } from "../utiles/interfaces";
+import userSlice, { setUser } from "../redux/userSlice";
+import { fetchAuth } from "../services/authServices";
+import { fetchUser } from "../services/userServices";
 
 const SignIn = () => {
   const dispatch = useDispatch();
@@ -22,31 +29,25 @@ const SignIn = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    dispatch(setLoading(true));
+    dispatch(authSlice.actions.setLoading(true));
+    dispatch(userSlice.actions.setLoading(true));
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/v1/user/login",
-        {
-          email,
-          password,
-        }
-      );
-      const getUser = await axios.post(
-        "http://localhost:3001/api/v1/user/profile",
-        null, // corps de la requête vide car aucune donnée supplémentaire n'est nécessaire
-        {
-          headers: {
-            Authorization: `Bearer ${response.data.body.token}`,
-          },
-        }
-      );
-      console.log("Authentification réussie:", response.data);
+      const authUser = await fetchAuth(email, password);
+      const getUser = await fetchUser(authUser.token);
+
+      console.log("Authentification réussie:", authUser);
       console.log("Utilisateur connecté:", getUser);
-      localStorage.setItem("token", response.data.body.token);
+      localStorage.setItem("token", authUser.token);
       dispatch(loginUserSuccess());
+      dispatch(setUser(getUser));
     } catch (error) {
       console.error("Erreur lors de l'authentification :", error);
-      dispatch(setError("Email ou mot de passe incorrect"));
+      dispatch(authSlice.actions.setError("Email ou mot de passe incorrect"));
+      dispatch(
+        userSlice.actions.setError(
+          "Impossible de récupérer les infos utilisateur"
+        )
+      );
     }
   };
 

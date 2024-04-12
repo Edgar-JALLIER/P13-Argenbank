@@ -5,16 +5,38 @@ import {
   faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../redux/authSlice";
+import authSlice from "../redux/authSlice";
 import { RootState } from "../utiles/interfaces";
+import userSlice from "../redux/userSlice";
+import { fetchUser } from "../services/userServices";
 
 const Header = () => {
   const dispatch = useDispatch();
+  const userInfo = useSelector((state) => (state as RootState).user.userInfo);
   const isAuthenticated = useSelector(
     (state) => (state as RootState).auth.isAuthenticated
   );
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchAndSetUser = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            throw new Error("Token not found");
+          }
+          const fetchedUser = await fetchUser(token);
+          dispatch(userSlice.actions.setUser(fetchedUser));
+        } catch (error) {
+          console.error("Failed to fetch user:", error);
+        }
+      };
+
+      fetchAndSetUser();
+    }
+  }, [isAuthenticated, dispatch]);
 
   return (
     <nav className="header-nav">
@@ -27,17 +49,18 @@ const Header = () => {
       </a>
       {isAuthenticated ? (
         <div>
-          <Link className="header-nav-item" to={"#"}>
+          <Link className="header-nav-item" to={"/user"}>
             <FontAwesomeIcon icon={faUserCircle} />
 
-            <span>Tony</span>
+            <span>{userInfo?.firstName}</span>
           </Link>
 
           <Link
             className="header-nav-item"
             to={"/"}
             onClick={() => {
-              dispatch(logoutUser());
+              dispatch(authSlice.actions.logoutUser());
+              dispatch(userSlice.actions.setUser(null));
               localStorage.removeItem("token");
             }}
           >

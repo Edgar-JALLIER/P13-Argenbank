@@ -43,6 +43,28 @@
   padding: 10px;
 }
 
+.container-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+  column-gap: 10px;
+  & input {
+    height: 35px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    border: none;
+  }
+  & button {
+    width: 120px;
+    height: 35px;
+    border-radius: 5px;
+    border: 2px solid $primary-color;
+    color: $primary-color;
+    font-weight: bold;
+    cursor: pointer;
+  }
+}
 .transaction-button {
   display: block;
   width: 100%;
