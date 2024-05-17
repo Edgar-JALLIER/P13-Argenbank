@@ -127,6 +127,16 @@ paths:
           required: true
           type: integer
         - in: query
+          name: sortByPeriod
+          description: Sort transactions by period
+          required: false
+          type: string
+          enum:
+            - lastWeek
+            - lastMonth
+            - currentYear
+            - all
+        - in: query
           name: sortByDate
           description: Sort transactions by date
           required: false
